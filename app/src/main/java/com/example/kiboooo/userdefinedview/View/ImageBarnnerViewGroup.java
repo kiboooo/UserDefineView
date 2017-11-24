@@ -1,11 +1,18 @@
 package com.example.kiboooo.userdefinedview.View;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Scroller;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Kiboooo on 2017/11/13.
@@ -13,25 +20,90 @@ import android.view.ViewGroup;
 
 public class ImageBarnnerViewGroup extends ViewGroup {
 
-    private int ChildrenCount; //ViewGroup中所有的子视图个数
-    private int Childrenheight;//子视图的高
-    private int Childrenwidth;//子视图的宽
+    private static int ChildrenCount; //ViewGroup中所有的子视图个数
+    private static int Childrenheight;//子视图的高
+    private static int Childrenwidth;//子视图的宽
+
+    private static Scroller scroller  ;
 
     private int first_x;//代表第一次按下时的X坐标；以及每一次移动过程中，移动之前的位置横坐标
-    private int index = 0;//代表图片的索引值；
+    private static int index = 0;//代表图片的索引值；
+
+    private Timer timer = new Timer();
+    private TimerTask task;
+    private boolean isAuto = true; //默认情况下开启
+
+    @SuppressLint("HandlerLeak")
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 0://进行自动轮播
+                    if (++index >= ChildrenCount) {
+                        index = 0;
+                    }
+                    scrollTo(index * Childrenwidth, 0);
+                    break;
+                case 1:
+
+                    break;
+            }
+        }
+    };
+
+
+
+    private void startAuto(){
+        isAuto = true;
+    }
+
+    private void stopAuto() {
+        isAuto = false;
+    }
+
 
     public ImageBarnnerViewGroup(Context context) {
+
         super(context);
+        initObj();
     }
 
     public ImageBarnnerViewGroup(Context context, AttributeSet attrs) {
+
         super(context, attrs);
+        initObj();
     }
 
     public ImageBarnnerViewGroup(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initObj();
     }
 
+    private void  initObj(){
+        scroller = new Scroller(getContext());
+
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                if (isAuto) {//开启轮播图
+                    handler.sendEmptyMessage(0);
+                }else
+                    handler.sendEmptyMessage(1);
+            }
+        };
+
+        timer.schedule(task, 100, 3000);//定时任务,100ms中每隔1S中执行一次任务Task
+    }
+
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+        if (scroller.computeScrollOffset()) {
+            scrollTo(scroller.getCurrX(), 0);
+            invalidate();//导致ViewGroup重绘
+        }
+    }
 
     /*自定义ViewGroup必须要实现的方法有： 测量 - 》布局 - 》绘制；
     * 由于绘制可以直接调用系统的绘制方法即可，不需要特地重写；
@@ -139,6 +211,15 @@ public class ImageBarnnerViewGroup extends ViewGroup {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN://表示用户点击屏幕 按下的一瞬间
+                stopAuto();
+
+                //判断当前图片的滑动是否完成
+                if (!scroller.isFinished()) {
+                    scroller.abortAnimation();//未完成图片的滑动就立即结束滑动
+
+                }
+
+
                 first_x = (int) event.getX();
                 Log.e("ACTION_DOWN", "" + first_x);
                 break;
@@ -157,6 +238,8 @@ public class ImageBarnnerViewGroup extends ViewGroup {
                 Log.e("ACTION_MOVE", "" + Distance);
                 break;
             case MotionEvent.ACTION_UP://表示  用户从屏幕抬起的一瞬间
+
+                startAuto();
                 int ScrollX = getScrollX();//获取：该视图内容相当于视图起始坐标的偏移量
 
                 index = (ScrollX + Childrenwidth / 2) / Childrenwidth;
@@ -167,7 +250,13 @@ public class ImageBarnnerViewGroup extends ViewGroup {
                     index = ChildrenCount - 1;
                 }
 
-                scrollTo(index * Childrenwidth, 0);
+
+                int dx = index * Childrenwidth - ScrollX;
+
+                scroller.startScroll(ScrollX,0,dx,0);
+                postInvalidate();
+
+//                scrollTo(index * Childrenwidth, 0);
 
                 Log.e("ACTION_UP", "" + index);
                 break;
@@ -178,4 +267,6 @@ public class ImageBarnnerViewGroup extends ViewGroup {
         return true;//返回true 告诉该ViewGroup的父View  我们已经处理完了该事件；
 
     }
+
+
 }
