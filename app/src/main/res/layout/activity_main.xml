@@ -6,7 +6,15 @@
     android:layout_height="match_parent"
     tools:context="com.example.kiboooo.userdefinedview.MainActivity">
 
-    <com.example.kiboooo.userdefinedview.View.ImageBarnnerViewGroup
+    <!--<com.example.kiboooo.userdefinedview.View.ImageBarnnerViewGroup-->
+        <!--android:id="@+id/image_group"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="100dp"-->
+        <!--&gt;-->
+
+    <!--</com.example.kiboooo.userdefinedview.View.ImageBarnnerViewGroup>-->
+    <com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout
         android:id="@+id/image_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,6 +22,6 @@
         >
 
 
-    </com.example.kiboooo.userdefinedview.View.ImageBarnnerViewGroup>
+    </com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout>
 
 </RelativeLayout>

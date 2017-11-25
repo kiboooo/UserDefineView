@@ -16,9 +16,10 @@ import java.util.TimerTask;
 
 /**
  * Created by Kiboooo on 2017/11/13.
+ *   自定义实现轮播图；
  */
 
-public class ImageBarnnerViewGroup extends ViewGroup {
+public class ImageBarnnerViewGroup extends ViewGroup  {
 
     private static int ChildrenCount; //ViewGroup中所有的子视图个数
     private static int Childrenheight;//子视图的高
@@ -29,9 +30,47 @@ public class ImageBarnnerViewGroup extends ViewGroup {
     private int first_x;//代表第一次按下时的X坐标；以及每一次移动过程中，移动之前的位置横坐标
     private static int index = 0;//代表图片的索引值；
 
+    //Timer是一种定时器工具，用来在一个后台线程计划执行指定任务。它可以计划执行一个任务一次或反复多次。
     private Timer timer = new Timer();
-    private TimerTask task; //时间任务
-    private boolean isAuto = true; //默认情况下开启
+
+    private TimerTask task; //TimerTask一个抽象类，它的子类代表一个可以被Timer计划的任务。
+    private boolean isAuto = true; //默认情况下开启轮播
+    private boolean isClick ;
+
+
+    /**
+     * 实现点击事件的获取：
+     * 利用判断用户手指抬起的一瞬间，判断当前用户是点击操作还是移动操作；
+     * 然后改变相应的状态信号量，实现点击事件获取；
+     */
+
+    private ImageBarnnerListener listener;
+
+    public ImageBarnnerListener getListener() {
+        return listener;
+    }
+
+    public void setListener(ImageBarnnerListener listener) {
+        this.listener = listener;
+    }
+
+    public interface ImageBarnnerListener{
+        void ClickListener(int index);//index 代表了当前点击的这张照片
+    }
+
+    private ImageBarnnerViewGroupLinsnner imageBarnnerViewGroupLinsnner;
+
+    public ImageBarnnerViewGroupLinsnner getImageBarnnerViewGroupLinsnner() {
+        return imageBarnnerViewGroupLinsnner;
+    }
+
+    public void setImageBarnnerViewGroupLinsnner(ImageBarnnerViewGroupLinsnner imageBarnnerViewGroupLinsnner) {
+        this.imageBarnnerViewGroupLinsnner = imageBarnnerViewGroupLinsnner;
+    }
+
+    /**
+     * 利用FrameLayout布局，加入覆盖在Image上面的
+     */
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
@@ -44,6 +83,8 @@ public class ImageBarnnerViewGroup extends ViewGroup {
                         index = 0;
                     }
                     scrollTo(index * Childrenwidth, 0);
+                    imageBarnnerViewGroupLinsnner.selectImage(index);
+
                     break;
                 case 1:
 
@@ -95,7 +136,8 @@ public class ImageBarnnerViewGroup extends ViewGroup {
             }
         };
 
-        timer.schedule(task, 100, 3000);//定时任务,100ms中每隔1S中执行一次任务Task
+    //定时任务，在任务执行前延时100毫秒才开始执行,每隔3S执行一次任务Task
+        timer.schedule(task, 100, 5000);
     }
 
     @Override
@@ -220,11 +262,11 @@ public class ImageBarnnerViewGroup extends ViewGroup {
                     scroller.abortAnimation();//未完成图片的滑动就立即结束滑动
 
                 }
-
-
+                isClick = true;
                 first_x = (int) event.getX();
                 Log.e("ACTION_DOWN", "" + first_x);
                 break;
+
             case MotionEvent.ACTION_MOVE://表示  按下后在屏幕上移动的过程
                 int MoveX = (int) event.getX();
                 int Distance = MoveX - first_x;//移动前后横坐标的变化范围
@@ -237,11 +279,11 @@ public class ImageBarnnerViewGroup extends ViewGroup {
                 //所以需要进行偏移量取反的操作；左划（←）同理
 
                 first_x = MoveX;//把当前的移动结束的坐标作为下一次滑动前的横坐标；
+                if (Distance!=0) isClick = false;
                 Log.e("ACTION_MOVE", "" + Distance);
                 break;
             case MotionEvent.ACTION_UP://表示  用户从屏幕抬起的一瞬间
 
-                startAuto();
                 int ScrollX = getScrollX();//获取：该视图内容相当于视图起始坐标的偏移量
 
                 index = (ScrollX + Childrenwidth / 2) / Childrenwidth;
@@ -252,15 +294,21 @@ public class ImageBarnnerViewGroup extends ViewGroup {
                     index = ChildrenCount - 1;
                 }
 
+                if (isClick) {
+                    listener.ClickListener(index);
+                }else
+                {
+                    int dx = index * Childrenwidth - ScrollX;
 
-                int dx = index * Childrenwidth - ScrollX;
-
-                scroller.startScroll(ScrollX,0,dx,0);
-                postInvalidate();
+                    scroller.startScroll(ScrollX,0,dx,0);
+                    postInvalidate();
+                    imageBarnnerViewGroupLinsnner.selectImage(index);
 
 //                scrollTo(index * Childrenwidth, 0);
 
-                Log.e("ACTION_UP", "" + index);
+                    Log.e("ACTION_UP", "" + index);
+                }
+                startAuto();
                 break;
 
             default:
@@ -268,6 +316,10 @@ public class ImageBarnnerViewGroup extends ViewGroup {
         }
         return true;//返回true 告诉该ViewGroup的父View  我们已经处理完了该事件；
 
+    }
+
+    public interface ImageBarnnerViewGroupLinsnner{
+        void selectImage(int pos);
     }
 
 
