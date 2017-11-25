@@ -24,13 +24,13 @@ public class ImageBarnnerViewGroup extends ViewGroup {
     private static int Childrenheight;//子视图的高
     private static int Childrenwidth;//子视图的宽
 
-    private static Scroller scroller  ;
+    private static Scroller scroller  ;//获取Scroller类
 
     private int first_x;//代表第一次按下时的X坐标；以及每一次移动过程中，移动之前的位置横坐标
     private static int index = 0;//代表图片的索引值；
 
     private Timer timer = new Timer();
-    private TimerTask task;
+    private TimerTask task; //时间任务
     private boolean isAuto = true; //默认情况下开启
 
     @SuppressLint("HandlerLeak")
@@ -53,6 +53,8 @@ public class ImageBarnnerViewGroup extends ViewGroup {
     };
 
 
+
+    //改变信号量的操作
 
     private void startAuto(){
         isAuto = true;
