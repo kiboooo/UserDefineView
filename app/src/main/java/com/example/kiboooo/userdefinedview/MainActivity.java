@@ -6,18 +6,26 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements ImageBarnnerFrameLayout.ImageBarnnerListener {
+public class MainActivity extends AppCompatActivity implements ImageBarnnerFrameLayout.ImageBarnnerListener,textdialpg.dialogListener{
 
 //    private ImageBarnnerViewGroup mGroup;
     private ImageBarnnerFrameLayout mGroup;
+    private TextView t,t2;
 
+
+    //轮播图显示数组；
     private int[] ids = new int[]{
 //            R.drawable.first_hanshake,
 //            R.drawable.second_hanshake,
@@ -33,6 +41,16 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mGroup =  findViewById(R.id.image_group);
+         t =  findViewById(R.id.textbtn);
+        t2 = findViewById(R.id.textbtn2);
+
+        t.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("textListener", "ghjgjh");
+                textdialpg.newInstance().show(getFragmentManager(),"");
+            }
+        });
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
@@ -63,4 +81,17 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
         Log.e("ClickListener",""+ index);
         Toast.makeText(MainActivity.this, "这是第" + (index + 1) + "图", Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public void onDialogListener(Date BeginDate, Date EndDate) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
+        t.setText("开始时间 ："+format.format(BeginDate));
+        t2.setText("结束时间 ："+format.format(EndDate));
+    }
+
+//    @Override
+//    public void onDialogListener(Date da) {
+//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
+//        t.setText(format.format(date));
+//    }
 }

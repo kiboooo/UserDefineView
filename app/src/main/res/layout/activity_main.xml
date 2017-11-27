@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.example.kiboooo.userdefinedview.MainActivity">
 
     <!--<com.example.kiboooo.userdefinedview.View.ImageBarnnerViewGroup-->
@@ -18,10 +18,30 @@
         android:id="@+id/image_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
         >
 
 
     </com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout>
+
+
+    <TextView
+        android:id="@+id/textbtn"
+        android:layout_below="@id/image_group"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:text="开始时间：2017-11-12"
+        android:gravity="center"
+        android:textSize="24sp"
+        />
+
+    <TextView
+        android:id="@+id/textbtn2"
+        android:layout_below="@id/textbtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="结束时间：2017-11-12"
+        android:gravity="center"
+        android:textSize="24sp"
+        />
 
 </RelativeLayout>
