@@ -1,16 +1,24 @@
 package com.example.kiboooo.userdefinedview;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.example.kiboooo.userdefinedview.Bean.WeatherImage;
 import com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout;
+import com.example.kiboooo.userdefinedview.Bean.WeathResult;
+import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,6 +31,47 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
 //    private ImageBarnnerViewGroup mGroup;
     private ImageBarnnerFrameLayout mGroup;
     private TextView t,t2;
+    private ImageView weatherImage;
+    private TextView weatherMessage;
+    private Gson mGson;
+
+    private final int SUCCESS = 1;
+    private final int FALL = 0;
+
+    @SuppressLint("HandlerLeak")
+    public Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case SUCCESS:
+//                    weatherMessage.setText((String)msg.obj);
+                    WeathResult weathResult = mGson.fromJson((String) msg.obj, WeathResult.class);
+                    Log.e("weathResult", weathResult.getIsForeign() + "");
+                    String image = weathResult.getRealtime().getNowWeather().getInfo();
+                    weatherMessage.setText(weathResult.getRealtime().getCity_name()
+                            +" "+weathResult.getRealtime().getDate()
+                            +" "+weathResult.getRealtime().getNowWeather().getTemperature()
+                            +" "+weathResult.getRealtime().getNowWeather().getInfo()
+                            +" "+weathResult.getRealtime().getNowWeather().getImg()
+                            +" "+weathResult.getLife().getInfo().ganmao.get(1));
+                    if (image.equals("晴") || image.equals("晴间多云"))
+                    {
+                        if (new Date(System.currentTimeMillis()).getHours()>19)
+                            image = image+"夜";
+                        else
+                            image = image+"日";
+                    }
+                    Glide.with(MainActivity.this).
+                            load(WeatherImage.weatherimage.get(image)).into(weatherImage);
+                    break;
+                case FALL:
+
+                    break;
+            }
+        }
+    };
+
 
 
     //轮播图显示数组；
@@ -43,6 +92,16 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
         mGroup =  findViewById(R.id.image_group);
          t =  findViewById(R.id.textbtn);
         t2 = findViewById(R.id.textbtn2);
+        weatherImage = findViewById(R.id.weather);
+        weatherMessage = findViewById(R.id.weather_message);
+        mGson = new Gson();
+
+        weatherImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                WeatherRequset.weather("西安", handler, SUCCESS, FALL);
+            }
+        });
 
         t.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
 
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
-        Bean.WITTH = dm.widthPixels;
+        MBean.WITTH = dm.widthPixels;
         List<Bitmap> list = new ArrayList<>();
 
         for (int i = 0; i < ids.length; i++) {

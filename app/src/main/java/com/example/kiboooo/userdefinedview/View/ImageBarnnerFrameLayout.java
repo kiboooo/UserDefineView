@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.example.kiboooo.userdefinedview.Bean;
+import com.example.kiboooo.userdefinedview.MBean;
 import com.example.kiboooo.userdefinedview.R;
 
 import java.util.List;
@@ -97,7 +97,7 @@ public class ImageBarnnerFrameLayout extends FrameLayout implements ImageBarnner
     private void addBitmapToImageBarnnerViewGroup(Bitmap bitmap) {
         ImageView imageView = new ImageView(getContext());
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        imageView.setLayoutParams(new ViewGroup.LayoutParams(Bean.WITTH, ViewGroup.LayoutParams.WRAP_CONTENT));
+        imageView.setLayoutParams(new ViewGroup.LayoutParams(MBean.WITTH, ViewGroup.LayoutParams.WRAP_CONTENT));
         imageView.setImageBitmap(bitmap);
         imageBarnnerViewGroup.addView(imageView);
     }
