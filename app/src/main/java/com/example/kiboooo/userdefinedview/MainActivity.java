@@ -1,11 +1,18 @@
 package com.example.kiboooo.userdefinedview;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -15,9 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.kiboooo.userdefinedview.Bean.WeathResult;
 import com.example.kiboooo.userdefinedview.Bean.WeatherImage;
 import com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout;
-import com.example.kiboooo.userdefinedview.Bean.WeathResult;
 import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
@@ -26,17 +33,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements ImageBarnnerFrameLayout.ImageBarnnerListener,textdialpg.dialogListener{
+public class MainActivity extends AppCompatActivity implements ImageBarnnerFrameLayout.ImageBarnnerListener, textdialpg.dialogListener {
 
-//    private ImageBarnnerViewGroup mGroup;
+    //    private ImageBarnnerViewGroup mGroup;
     private ImageBarnnerFrameLayout mGroup;
-    private TextView t,t2;
+    private TextView t, t2;
     private ImageView weatherImage;
     private TextView weatherMessage;
     private Gson mGson;
 
+    private LocationManager mLocationManager;
+
+
     private final int SUCCESS = 1;
     private final int FALL = 0;
+
+    private final int GETLOCATION_SUCCESS = 11;
+    private final int GETLOCATION_FALL = 10;
 
     @SuppressLint("HandlerLeak")
     public Handler handler = new Handler() {
@@ -50,28 +63,34 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
                     Log.e("weathResult", weathResult.getIsForeign() + "");
                     String image = weathResult.getRealtime().getNowWeather().getInfo();
                     weatherMessage.setText(weathResult.getRealtime().getCity_name()
-                            +" "+weathResult.getRealtime().getDate()
-                            +" "+weathResult.getRealtime().getNowWeather().getTemperature()
-                            +" "+weathResult.getRealtime().getNowWeather().getInfo()
-                            +" "+weathResult.getRealtime().getNowWeather().getImg()
-                            +" "+weathResult.getLife().getInfo().ganmao.get(1));
-                    if (image.equals("晴") || image.equals("晴间多云"))
-                    {
-                        if (new Date(System.currentTimeMillis()).getHours()>19)
-                            image = image+"夜";
+                            + " " + weathResult.getRealtime().getDate()
+                            + " " + weathResult.getRealtime().getNowWeather().getTemperature()
+                            + " " + weathResult.getRealtime().getNowWeather().getInfo()
+                            + " " + weathResult.getRealtime().getNowWeather().getImg()
+                            + " " + weathResult.getLife().getInfo().ganmao.get(1));
+                    if (image.equals("晴") || image.equals("晴间多云")) {
+                        if (new Date(System.currentTimeMillis()).getHours() > 19)
+                            image = image + "夜";
                         else
-                            image = image+"日";
+                            image = image + "日";
                     }
                     Glide.with(MainActivity.this).
                             load(WeatherImage.weatherimage.get(image)).into(weatherImage);
                     break;
-                case FALL:
 
+                case GETLOCATION_SUCCESS:
+                    String LocationName = (String) msg.obj;
+                    WeatherRequset.weather(LocationName, handler, SUCCESS, FALL);
+                    break;
+                case GETLOCATION_FALL:
+                    Toast.makeText(MainActivity.this, "获取地名出错", Toast.LENGTH_SHORT).show();
+                    break;
+                case FALL:
+                    Toast.makeText(MainActivity.this, "获取天气预报出错", Toast.LENGTH_SHORT).show();
                     break;
             }
         }
     };
-
 
 
     //轮播图显示数组；
@@ -89,8 +108,8 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mGroup =  findViewById(R.id.image_group);
-         t =  findViewById(R.id.textbtn);
+        mGroup = findViewById(R.id.image_group);
+        t = findViewById(R.id.textbtn);
         t2 = findViewById(R.id.textbtn2);
         weatherImage = findViewById(R.id.weather);
         weatherMessage = findViewById(R.id.weather_message);
@@ -107,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
             @Override
             public void onClick(View v) {
                 Log.e("textListener", "ghjgjh");
-                textdialpg.newInstance().show(getFragmentManager(),"");
+                textdialpg.newInstance().show(getFragmentManager(), "");
             }
         });
 
@@ -132,20 +151,21 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
 //        }
 //
         mGroup.setListener(this);
+        CheckPermission();
     }
 
 
     @Override
     public void ClickListener(int index) {
-        Log.e("ClickListener",""+ index);
+        Log.e("ClickListener", "" + index);
         Toast.makeText(MainActivity.this, "这是第" + (index + 1) + "图", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onDialogListener(Date BeginDate, Date EndDate) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
-        t.setText("开始时间 ："+format.format(BeginDate));
-        t2.setText("结束时间 ："+format.format(EndDate));
+        t.setText("开始时间 ：" + format.format(BeginDate));
+        t2.setText("结束时间 ：" + format.format(EndDate));
     }
 
 //    @Override
@@ -153,4 +173,65 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
 //        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
 //        t.setText(format.format(date));
 //    }
+
+    @SuppressLint("MissingPermission")
+    private void iniJW() {
+        /*调用系统 location 服务*/
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        assert mLocationManager != null;
+        Location location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (location == null)
+            location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        String LongitudeLatitude = GetlongitudeLatitude(location);
+        WeatherRequset.LocationName(LongitudeLatitude,handler,GETLOCATION_SUCCESS,GETLOCATION_FALL);
+    }
+
+    private void CheckPermission(){
+        List<String> permissionList = new ArrayList<>();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                ){
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+        if (permissionList.isEmpty()) {
+            iniJW();
+        }else{
+            String[] permission = permissionList.toArray(new String[permissionList.size()]);
+            ActivityCompat.requestPermissions(MainActivity.this, permission, 1);
+        }
+    }
+
+    private String GetlongitudeLatitude(Location mLocation) {
+        if (mLocation != null)
+        return  String.valueOf(mLocation.getLatitude())+
+                ":" +
+                mLocation.getLongitude();
+        else
+        return "39.93:116.40";
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 1:
+                if (grantResults.length > 0) {
+                    for (int result : grantResults) {
+                        if (result != PackageManager.PERMISSION_GRANTED) {
+                            finish();
+                            break;
+                        }
+                    }
+                    iniJW();
+                }else {
+                    finish();
+                }
+                break;
+            default:
+        }
+    }
+
 }
