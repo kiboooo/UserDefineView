@@ -3,67 +3,89 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.example.kiboooo.userdefinedview.MainActivity">
 
-    <!--<com.example.kiboooo.userdefinedview.View.ImageBarnnerViewGroup-->
-        <!--android:id="@+id/image_group"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginTop="100dp"-->
-        <!--&gt;-->
-
-    <!--</com.example.kiboooo.userdefinedview.View.ImageBarnnerViewGroup>-->
-    <com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout
-        android:id="@+id/image_group"
+    <com.example.kiboooo.userdefinedview.MyScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
-
-    </com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout>
-
-
-    <TextView
-        android:id="@+id/textbtn"
-        android:layout_below="@id/image_group"
+        android:layout_height="match_parent">
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:text="开始时间：2017-11-12"
-        android:gravity="center"
-        android:textSize="24sp"
-        />
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/textbtn2"
-        android:layout_below="@id/textbtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="结束时间：2017-11-12"
-        android:gravity="center"
-        android:textSize="24sp"
-        />
+        <com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout
+            android:id="@+id/image_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/textbtn2"
-        android:orientation="horizontal"
-        >
-        <ImageView
-            android:id="@+id/weather"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_margin="10dp"
-            android:src="@drawable/weather99"
-            />
+        </com.example.kiboooo.userdefinedview.View.ImageBarnnerFrameLayout>
+
 
         <TextView
-            android:id="@+id/weather_message"
+            android:id="@+id/textbtn"
+            android:layout_below="@id/image_group"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical|center_horizontal"
+            android:layout_height="100dp"
+            android:text="开始时间：2017-11-12"
+            android:gravity="center"
+            android:textSize="24sp"
             />
 
-    </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/textbtn2"
+            android:layout_below="@id/textbtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="结束时间：2017-11-12"
+            android:gravity="center"
+            android:textSize="24sp"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/textbtn2"
+            android:orientation="vertical"
+            >
+            <ImageView
+                android:id="@+id/weather"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:src="@drawable/weather99"
+                />
+
+            <TextView
+                android:id="@+id/weather_message"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|center_horizontal"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/weather9"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/weather9"
+                />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/weather9"
+                />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    </com.example.kiboooo.userdefinedview.MyScrollView>
 
 </RelativeLayout>

@@ -2,15 +2,14 @@ package com.example.kiboooo.userdefinedview;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +20,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.location.BDAbstractLocationListener;
+import com.baidu.location.BDLocation;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.bumptech.glide.Glide;
 import com.example.kiboooo.userdefinedview.Bean.WeathResult;
 import com.example.kiboooo.userdefinedview.Bean.WeatherImage;
@@ -35,7 +38,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements ImageBarnnerFrameLayout.ImageBarnnerListener, textdialpg.dialogListener {
 
-    //    private ImageBarnnerViewGroup mGroup;
+
     private ImageBarnnerFrameLayout mGroup;
     private TextView t, t2;
     private ImageView weatherImage;
@@ -43,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
     private Gson mGson;
 
     private LocationManager mLocationManager;
+    private LocationClient locationClient;
 
 
     private final int SUCCESS = 1;
@@ -111,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
         mGroup = findViewById(R.id.image_group);
         t = findViewById(R.id.textbtn);
         t2 = findViewById(R.id.textbtn2);
+
         weatherImage = findViewById(R.id.weather);
         weatherMessage = findViewById(R.id.weather_message);
         mGson = new Gson();
@@ -174,45 +179,78 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
 //        t.setText(format.format(date));
 //    }
 
-    @SuppressLint("MissingPermission")
     private void iniJW() {
         /*调用系统 location 服务*/
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        assert mLocationManager != null;
-        Location location = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location == null)
-            location = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        String LongitudeLatitude = GetlongitudeLatitude(location);
-        WeatherRequset.LocationName(LongitudeLatitude,handler,GETLOCATION_SUCCESS,GETLOCATION_FALL);
+//        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//        String provider = null;
+//        List<String> list = mLocationManager.getProviders(true);
+//        if (list.contains(LocationManager.NETWORK_PROVIDER)) {
+//            Toast.makeText(MainActivity.this, "网络", Toast.LENGTH_SHORT).show();
+//            provider = LocationManager.NETWORK_PROVIDER;
+//        } else if (list.contains(LocationManager.GPS_PROVIDER)) {
+//            Toast.makeText(MainActivity.this, "GPS", Toast.LENGTH_SHORT).show();
+//            provider = LocationManager.GPS_PROVIDER;
+//        }else {
+//            Toast.makeText(MainActivity.this, "网络或者GPS没有打开", Toast.LENGTH_SHORT).show();
+//        }
+//
+//        Location location = mLocationManager.getLastKnownLocation(provider);
+        locationClient = new LocationClient(getApplicationContext());
+        locationClient.registerLocationListener(new MyLocationListener());
+        LocationClientOption option = new LocationClientOption();
+        option.setIsNeedAddress(true);//获取当前位置的详细地址信息
+        locationClient.setLocOption(option);
+        locationClient.start();
+
+
+//        String LongitudeLatitude = GetlongitudeLatitude(location);
+//        WeatherRequset.LocationName(LongitudeLatitude,handler,GETLOCATION_SUCCESS,GETLOCATION_FALL);
     }
 
-    private void CheckPermission(){
+    /*获取权限*/
+    private void CheckPermission() {
         List<String> permissionList = new ArrayList<>();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
-                ){
+                ) {
             permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                != PackageManager.PERMISSION_GRANTED
+                ) {
+            permissionList.add(Manifest.permission.READ_PHONE_STATE);
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+                ) {
+            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
         if (permissionList.isEmpty()) {
             iniJW();
-        }else{
+        } else {
             String[] permission = permissionList.toArray(new String[permissionList.size()]);
             ActivityCompat.requestPermissions(MainActivity.this, permission, 1);
         }
     }
 
-    private String GetlongitudeLatitude(Location mLocation) {
-        if (mLocation != null)
-        return  String.valueOf(mLocation.getLatitude())+
-                ":" +
-                mLocation.getLongitude();
-        else
-        return "39.93:116.40";
-    }
+//    private String GetlongitudeLatitude(Location mLocation) {
+//        if (mLocation != null) {
+//            return String.valueOf(mLocation.getLatitude()) +
+//                    ":" +
+//                    mLocation.getLongitude();
+//        }
+//        else{
+//            Toast.makeText(MainActivity.this, "Location 为null", Toast.LENGTH_SHORT).show();
+////            return "39.93:116.40";
+//            return "";
+//        }
+//
+//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -226,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
                         }
                     }
                     iniJW();
-                }else {
+                } else {
                     finish();
                 }
                 break;
@@ -234,4 +272,29 @@ public class MainActivity extends AppCompatActivity implements ImageBarnnerFrame
         }
     }
 
+
+    public class MyLocationListener extends BDAbstractLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            Message message = new Message();
+            message.what = GETLOCATION_SUCCESS;
+            message.obj = bdLocation.getDistrict().substring(0, bdLocation.getDistrict().length() - 1);
+            handler.sendMessage(message);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e("生命周期", "onDestroy");
+        locationClient.stop();
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        Log.e("生命周期", "onSaveInstanceState");
+    }
 }
